@@ -1,0 +1,1229 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Script File
+//
+//      File: Xenoblade 2 Save File Editor (https://github.com/x43x61x69/Xenoblade2-Save-Editor)
+//   Authors: x43x61x69
+//   Version: 0.1.2
+//   Purpose: Ease the save editing process.
+//  Category:
+//   History:
+//------------------------------------------------
+//
+// Please include the original Gist URL and credits when sharing this file.
+//
+
+/* This was based on moosehunter's template.
+   You need to run the template first before using this script. */
+// #include "bf2savefile.bt"
+
+/* Make backups before you use this!
+   Un-comment the features you wanted to apply,
+   comment out those you don't need. */
+
+/* System */
+/* Don't use this option unless you know what you are doing.
+   Events dates were related to game time. */
+// resetGameTime();
+// setGameClearCount(1);
+setMoneyMax();
+setEtherCrystalsMax();
+setCoinCountMax();
+setMiniGameScoresMax();
+
+/* Drivers */
+/* This will max all the stats by DriverId.
+   If set to '0', all drivers will be altered.
+   This CAN'T be undone if you don't have a backup!
+   This does not affect weapon points, art levels or pouch slots.
+   If agrv 2 is not set or <= 0, level will be set to 65535. Normal max value is 99.
+   If you were in new game+, you can lower the level in the hotel. */
+// setDriverStatsMax(0, 99);
+/* This will max the exp points by DriverId.
+   If set to '0', all drivers will be altered. */
+setDriverExpMax(0);
+/* This will max the skill points by DriverId.
+   If set to '0', all drivers will be altered. */
+setDriverSkillPointsMax(0);
+/* This will max weapon points by DriverId.
+   If set to '0', all drivers will be altered. */
+setDriverWeaponPointsMax(0);
+/* Set art levels by DriverId.
+   Level value can be 0 to 5. Use any value outside this range will set to max.
+   If DriverId was set to '0', all drivers will be altered. */
+// setDriverArtLevelsMax(0, 5);
+/* Enable all pouch slots by DriverId. If set to '0', all drivers will be altered. */
+setDriverPouchMax(0);
+
+/* Blades */
+/* Remove all common blades. */
+// removeAllCommonBlades();
+/* Get blade stats info. Use agrv '0' to list all blades instead of rare only.
+   Use this to find the BladeId. */
+// getBladeInfo(0);
+/* This will max all the stats by BladeId.
+   If set to '0', all blades will be altered. */
+setBladeStatsMax(0);
+/* This will max all the art / skill levels (w/o unlocking Affinity Chart) by BladeId.
+   If set to '0', all blades will be altered. */
+setBladeSkillsMax(0);
+/* Unlock Blades' favorite categories and items by BladeId.
+   If set to '0', all blades will be altered. */
+setBladeFavoritesUnlocked(0);
+/* Unlock Blades' all possible Affinity Chart by BladeId.
+   (Some still needs manual handling.)
+   If set to '0', all blades will be altered.
+   Favorites related items will be set to 1 lower than max.
+   You will have to apply this multiple times.
+   The achievements quests change when each row was unlocked.
+   Apply this again each time you unlocked a new row. */
+setBladeAffinityChartUnlocked(0);
+
+/* Unlock specific rare blade by BladeId which has no DataType and Creator yet.
+   You must assign a Creator, Driver and its CreateEventID to it.
+   The reason why we can't unlocked all the rare blades at once was because
+   it will mass the story up. Also you should not use this to unlock those you
+   will get from story. */
+/* NOT WORKING! DO NOT USE THIS! THIS WAS RELATED TO GAME FLAGS. */
+// setBladesUnlocked(1045, 1, 1, 19006);
+
+/* Items: You must have at least one item to max that item out. */
+setItemChipBoxMax();
+setItemSalvageBoxMax();
+setItemPreciousBoxMax();
+setItemCollectionListBoxMax();
+setItemTresureBoxMax();
+setItemFavoriteBoxMax();
+setItemEmptyOrbBoxMax();
+setItemCrystalBoxEntries();
+setItemCrystalBoxMax();
+setItemBoosterBoxMax();
+
+// ----- [ DO NOT TOUCH ANYTHING BELOW ] -----
+
+// Game Time
+
+void resetGameTime(void)
+{
+    const int hour = ElapseTime.Hours;
+    const int mins = ElapseTime.Minutes;
+    const int secs = ElapseTime.Seconds;
+
+    ElapseTime.Hours = 0;
+    ElapseTime.Minutes = 0;
+    ElapseTime.Seconds = 0;
+
+    GameTime.Days = 0;
+    GameTime.Hours = 0;
+    GameTime.Minutes = 0;
+    GameTime.Seconds = 0;
+
+    Printf("[Game Time] Reset (Previously %ld:%ld:%ld).\n", hour, mins, secs);
+}
+
+// Money
+
+#define BF2_MONEY_MAX 99999999
+
+void setMoneyMax(void)
+{
+    setMoney(BF2_MONEY_MAX);
+}
+
+void setMoney(uint32 value)
+{
+    const int currentValue = Money;
+
+    if (currentValue == value)
+    {
+        Printf("[Money] Not changed (%ld).\n", currentValue);
+        return;
+    }
+
+    Money = value;
+
+    Printf("[Money] Set to %ld (Previously %ld).\n", Money, currentValue);
+}
+
+// Game Clear Count
+
+void setGameClearCount(uint32 value)
+{
+    const int currentValue = GameClearCount;
+
+    if (currentValue == value)
+    {
+        Printf("[Game Clear Count] Not changed (%ld).\n", currentValue);
+        return;
+    }
+
+    GameClearCount = value;
+
+    Printf("[Game Clear Count] Set to %ld (Previously %ld).\n", GameClearCount, currentValue);
+}
+
+// EtherCrystals
+
+#define BF2_ETHER_CRYSTAL_MAX 99999999
+
+void setEtherCrystalsMax(void)
+{
+    setEtherCrystals(BF2_ETHER_CRYSTAL_MAX);
+}
+
+void setEtherCrystals(uint32 value)
+{
+    const int currentValue = EtherCrystals;
+
+    if (currentValue == value)
+    {
+        Printf("[Ether Crystals] Not changed (%ld).\n", currentValue);
+        return;
+    }
+
+    EtherCrystals = value;
+
+    Printf("[Ether Crystals] Set to %ld (Previously %ld).\n", EtherCrystals, currentValue);
+}
+
+// CoinCount
+
+#define BF2_COIN_COUNT_MAX 99999999
+
+void setCoinCountMax(void)
+{
+    setCoinCount(BF2_COIN_COUNT_MAX);
+}
+
+void setCoinCount(uint32 value)
+{
+    const int currentValue = CoinCount;
+
+    if (currentValue == value)
+    {
+        Printf("[Coin Count] Not changed (%ld).\n", currentValue);
+        return;
+    }
+
+    CoinCount = value;
+
+    Printf("[Coin Count] Set to %ld (Previously %ld).\n", CoinCount, currentValue);
+}
+
+// Mini Game Scores
+
+#define BF2_MINI_GAME_SCORE_MAX 255
+
+void setMiniGameScoresMax(void)
+{
+    setMiniGameScores(BF2_MINI_GAME_SCORE_MAX);
+}
+
+void setMiniGameScores(unsigned char value)
+{
+    const int size = sizeof(Minigame) / sizeof(unsigned char);
+
+    // Printf("[Mini Game Scores] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Minigame[i] != value)
+        {
+            Minigame[i] = value;
+            total++;
+        }
+    }
+
+    Printf("[Mini Game Scores] %ld patched.\n", total);
+}
+
+// Driver Stats
+
+#define BF2_DRIVER_STATS_IDEA_LEVEL_MAX 15
+#define BF2_DRIVER_STATS_LEVEL_MAX      0xFFFF
+#define BF2_DRIVER_STATS_HP_MAX         0xFFFF
+#define BF2_DRIVER_STATS_ABI_MAX        0xFFFF
+#define BF2_DRIVER_STATS_RATE_MAX       0xFF
+#define BF2_DRIVER_STATS_POINTS_MAX     99999999
+#define BF2_DRIVER_STATS_ART_LEVEL_MAX  5
+
+void setDriverStatsMax(int driverId, int level)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    // Printf("[Drivers.Driver] size: %ld.\n", size);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+    int ideaLevelSize = 0;
+    int weaponSize = 0;
+    int artLevelsSize = 0;
+    int setLevel = level;
+
+    if (!setLevel)
+    {
+        setLevel = BF2_DRIVER_STATS_LEVEL_MAX;
+    }
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            // Idea Level
+            ideaLevelSize = sizeof(Drivers.Driver[i].IdeaLevels.IdeaCategories) / sizeof(SDataIdea);
+
+            // Printf("[Drivers] ideaLevelSize: %ld.\n", ideaLevelSize);
+
+            j = 0;
+            for (j = 0; j < ideaLevelSize; j++)
+            {
+                Drivers.Driver[i].IdeaLevels.IdeaCategories[j].PointCount = BF2_DRIVER_STATS_POINTS_MAX;
+                Drivers.Driver[i].IdeaLevels.IdeaCategories[j].IdeaLevel = BF2_DRIVER_STATS_IDEA_LEVEL_MAX;
+            }
+
+            // Level
+            Drivers.Driver[i].Level = setLevel;
+
+            // Stats
+            Drivers.Driver[i].HpMax = BF2_DRIVER_STATS_HP_MAX;
+            Drivers.Driver[i].Strength = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].PowEther = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].Dex = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].Agility = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].Luck = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].PArmor = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].EArmor = BF2_DRIVER_STATS_ABI_MAX;
+            Drivers.Driver[i].CritRate = BF2_DRIVER_STATS_RATE_MAX;
+            Drivers.Driver[i].GuardRate = BF2_DRIVER_STATS_RATE_MAX;
+            Drivers.Driver[i].Exp = BF2_DRIVER_STATS_POINTS_MAX;
+            Drivers.Driver[i].BattleExp = BF2_DRIVER_STATS_POINTS_MAX;
+            Drivers.Driver[i].SkillPoints = BF2_DRIVER_STATS_POINTS_MAX;
+            Drivers.Driver[i].TotalSkillPoints = BF2_DRIVER_STATS_POINTS_MAX;
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.Stats] %ld patched.\n", total);
+}
+
+void setDriverExpMax(int driverId)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            Drivers.Driver[i].Exp = BF2_DRIVER_STATS_POINTS_MAX;
+            Drivers.Driver[i].BattleExp = BF2_DRIVER_STATS_POINTS_MAX;
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.Exp] %ld patched.\n", total);
+}
+
+void setDriverSkillPointsMax(int driverId)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    // Printf("[Drivers.Driver] size: %ld.\n", size);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            Drivers.Driver[i].SkillPoints = BF2_DRIVER_STATS_POINTS_MAX;
+            Drivers.Driver[i].TotalSkillPoints = BF2_DRIVER_STATS_POINTS_MAX;
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.SkillPoints] %ld patched.\n", total);
+}
+
+void setDriverWeaponPointsMax(int driverId)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+    int weaponSize = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            // Weapon Points
+            weaponSize = sizeof(Drivers.Driver[i].Weapons) / sizeof(DriverArt);
+
+            j = 0;
+            for (j = 0; j < weaponSize; j++)
+            {
+                if (Drivers.Driver[i].Weapons[j].Ids[0] &&
+                    Drivers.Driver[i].Weapons[j].Ids[1] &&
+                    Drivers.Driver[i].Weapons[j].Ids[2])
+                    {
+                        Drivers.Driver[i].Weapons[j].WeaponPoints = BF2_DRIVER_STATS_POINTS_MAX;
+                        Drivers.Driver[i].Weapons[j].TotalWeaponPoints = BF2_DRIVER_STATS_POINTS_MAX;
+                    }
+            }
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.WeaponPoints] %ld patched.\n", total);
+}
+
+void setDriverArtLevelsMax(int driverId, int level)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+    int artLevelsSize = 0;
+    int artLevel = level;
+
+    if (artLevel < 0 ||
+        artLevel > BF2_DRIVER_STATS_ART_LEVEL_MAX)
+    {
+        artLevel = BF2_DRIVER_STATS_ART_LEVEL_MAX;
+    }
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            // Driver Art Levels
+            artLevelsSize = sizeof(Drivers.Driver[i].DriverArtLevels) / sizeof(unsigned char);
+
+            j = 0;
+            for (j = 0; j < artLevelsSize; j++)
+            {
+                Drivers.Driver[i].DriverArtLevels[j] = artLevel;
+            }
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.ArtLevels] %ld patched.\n", total);
+}
+
+void setDriverPouchMax(int driverId)
+{
+    const int size = sizeof(Drivers) / sizeof(gf_SDataDriver);
+
+    int i = 0;
+    int j = 0;
+    int total = 0;
+    int pouchSize = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Drivers.Driver[i].DriverId &&
+            (!driverId ||
+            Drivers.Driver[i].DriverId == driverId))
+        {
+            // Pouch
+            pouchSize = sizeof(Drivers.Driver[i].PouchInfo) / sizeof(SDataPouch);
+
+            // Printf("[Drivers.Driver] pouchSize: %ld.\n", pouchSize);
+
+            j = 0;
+            for (j = 0; j < pouchSize; j++)
+            {
+                Drivers.Driver[i].PouchInfo[j].IsEnabled = 1;
+            }
+
+            total++;
+        }
+    }
+
+    Printf("[Drivers.Driver.Pouch] %ld patched.\n", total);
+}
+
+// Blade Stats
+
+void getBladeInfo(int rareOnly)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    int i = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].BladeId &&
+            (Blades.Blade[i].RareNameId || !rareOnly))
+        {
+            Printf("[Blades.Blade.Info] #%d, Name: %s, BladeReleaseStatus: %d , CreateEventID: %d, BladeId: %d, RareNameId: %d, CommonNameId: %d, Creator: %d, Driver: %d\n", //, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
+            i,
+            Blades.Blade[i].Name,
+            Blades.Blade[i].BladeReleaseStatus,
+            Blades.Blade[i].CreateEventID,
+            Blades.Blade[i].BladeId,
+            Blades.Blade[i].RareNameId,
+            Blades.Blade[i].CommonNameId,
+            Blades.Blade[i].Creator,
+            Blades.Blade[i].SetDriver//,
+            // Blades.Blade[i].TrustPoints,
+            // Blades.Blade[i].WeaponType,
+            // Blades.Blade[i].Atr,
+            // Blades.Blade[i].FieldSkills[0].Id,
+            // Blades.Blade[i].FieldSkills[1].Id,
+            // Blades.Blade[i].FieldSkills[2].Id,
+            // Blades.Blade[i].Race,
+            // Blades.Blade[i].Gender,
+            // Blades.Blade[i].OrbNum,
+            // Blades.Blade[i].CoolTime,
+            // Blades.Blade[i].PArmor,
+            // Blades.Blade[i].EArmor,
+            // Blades.Blade[i].HpMaxRev,
+            // Blades.Blade[i].StrengthRev,
+            // Blades.Blade[i].PowEtherRev,
+            // Blades.Blade[i].DexRev,
+            // Blades.Blade[i].AgilityRev,
+            // Blades.Blade[i].LuckRev,
+            // Blades.Blade[i].Condition
+        );
+        }
+    }
+}
+
+// Unlock Rare Blades
+
+void setBladesUnlocked(int bladeId, int createrId, int driverId, int createEventID)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    int i = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (createEventID &&
+            Blades.Blade[i].BladeId == bladeId &&
+            Blades.Blade[i].RareNameId &&
+            !Blades.Blade[i].DataType &&
+            !Blades.Blade[i].Creator)
+        {
+            Blades.Blade[i].DataType = 1;
+            Blades.Blade[i].Creator = createrId;
+            Blades.Blade[i].SetDriver = driverId;
+            Blades.Blade[i].BladeReleaseStatus = 1;
+            Blades.Blade[i].CreateEventID = createEventID;
+            Blades.Blade[i].BornTime.Seconds = GameTime.Seconds;
+            Blades.Blade[i].BornTime.Minutes = GameTime.Minutes;
+            Blades.Blade[i].BornTime.Hours = GameTime.Hours;
+
+            Printf("[Blades.Blade.Unlocked] #%d, %d, %d, %s, %d, %d\n",
+            i,
+            Blades.Blade[i].BladeId,
+            Blades.Blade[i].RareNameId,
+            Blades.Blade[i].Name,
+            Blades.Blade[i].Creator,
+            Blades.Blade[i].SetDriver);
+        }
+    }
+}
+
+void removeAllCommonBlades(void)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    int i = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].BladeId &&
+            !Blades.Blade[i].RareNameId &&
+            Blades.Blade[i].CommonNameId &&
+            Blades.Blade[i].DataType &&
+            Blades.Blade[i].Creator)
+        {
+            Printf("[Blades.Blade.Removed] #%d, %d, %d, %d, %s, %d, %d\n",
+            i,
+            Blades.Blade[i].BladeId,
+            Blades.Blade[i].RareNameId,
+            Blades.Blade[i].CommonNameId,
+            Blades.Blade[i].Name,
+            Blades.Blade[i].Creator,
+            Blades.Blade[i].SetDriver);
+
+            Blades.Blade[i].BladeId = 0;
+            Blades.Blade[i].CommonNameId = 0;
+            Blades.Blade[i].DataType = 0;
+            Blades.Blade[i].Creator = 0;
+            Blades.Blade[i].SetDriver = 0;
+            Blades.Blade[i].CreateEventID = 0;
+            Blades.Blade[i].BornTime.Seconds = 0;
+            Blades.Blade[i].BornTime.Minutes = 0;
+            Blades.Blade[i].BornTime.Hours = 0;
+        }
+    }
+}
+
+// Blade Stats
+
+#define BF2_BLADE_STATS_IDEA_LEVEL_MAX 15
+#define BF2_BLADE_STATS_LEVEL_MAX      0xFFFF
+#define BF2_BLADE_STATS_HP_MAX         0xFFFF
+#define BF2_BLADE_STATS_ABI_MAX        0xFFFF
+#define BF2_BLADE_STATS_RATE_MAX       100
+#define BF2_BLADE_STATS_POINTS_MAX     0xFFFF
+#define BF2_BLADE_STATS_RANK_MAX       16 // SS
+#define BF2_BLADE_STATS_ORB_MAX        3
+
+void setBladeStatsMax(int bladeId)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    // Printf("[Blades] size: %ld.\n", size);
+
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].Creator &&
+            (!bladeId ||
+            Blades.Blade[i].BladeId == bladeId))
+        {
+            // Trust Points
+            Blades.Blade[i].TrustPoints = BF2_BLADE_STATS_POINTS_MAX;
+
+            // Trust Rank
+            Blades.Blade[i].TrustRank = BF2_BLADE_STATS_RANK_MAX;
+
+            // Cool Time
+            Blades.Blade[i].CoolTime = 0;
+
+            // Orb Slot
+            Blades.Blade[i].OrbNum = BF2_BLADE_STATS_ORB_MAX;
+
+            // Stats
+            Blades.Blade[i].PArmor = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].EArmor = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].HpMaxRev = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].StrengthRev = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].PowEtherRev = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].DexRev = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].AgilityRev = BF2_BLADE_STATS_RATE_MAX;
+            Blades.Blade[i].LuckRev = BF2_BLADE_STATS_RATE_MAX;
+
+            total++;
+        }
+    }
+
+    Printf("[Blades.Stats] %ld patched.\n", total);
+}
+
+void setBladeSkillsMax(int bladeId)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    // Printf("[Blades] size: %ld.\n", size);
+
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int total = 0;
+    int bladeSkillsSize = 0;
+    int fieldSkillsSize = 0;
+    int artsSize = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].Creator &&
+            (!bladeId ||
+            Blades.Blade[i].BladeId == bladeId))
+        {
+            // Arts
+            artsSize = sizeof(Blades.Blade[i].BArts) / sizeof(gf_GfDataBladeArts);
+
+            j = 0;
+            for (j = 0; j < artsSize; j++)
+            {
+                if (Blades.Blade[i].BArts[j].MaxLevel &&
+                    Blades.Blade[i].BArts[j].Level != Blades.Blade[i].BArts[j].MaxLevel)
+                {
+                    Blades.Blade[i].BArts[j].Level = Blades.Blade[i].BArts[j].MaxLevel;
+                }
+            }
+
+            // Blade Skills
+            bladeSkillsSize = sizeof(Blades.Blade[i].BladeSkills) / sizeof(gf_GfDataBladeSkill);
+
+            j = 0;
+            for (j = 0; j < bladeSkillsSize; j++)
+            {
+                if (Blades.Blade[i].BladeSkills[j].Level != Blades.Blade[i].BladeSkills[j].MaxLevel)
+                {
+                    Blades.Blade[i].BladeSkills[j].Level = Blades.Blade[i].BladeSkills[j].MaxLevel;
+                }
+            }
+
+            // Field Skills
+            fieldSkillsSize = sizeof(Blades.Blade[i].FieldSkills) / sizeof(gf_GfDataFieldSkill);
+
+            j = 0;
+            for (j = 0; j < fieldSkillsSize; j++)
+            {
+                if (Blades.Blade[i].FieldSkills[j].Level != Blades.Blade[i].FieldSkills[j].MaxLevel)
+                {
+                    Blades.Blade[i].FieldSkills[j].Level = Blades.Blade[i].FieldSkills[j].MaxLevel;
+                }
+            }
+
+            total++;
+        }
+    }
+
+    Printf("[Blades.Skills] %ld patched.\n", total);
+}
+
+void setBladeFavoritesUnlocked(int bladeId)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    int i = 0;
+    int artsSize = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].Creator &&
+            (!bladeId ||
+            Blades.Blade[i].BladeId == bladeId))
+        {
+            // Favorites
+
+            if (Blades.Blade[i].FavoriteCategory0 &&
+                !Blades.Blade[i].FavoriteCategory0Unlocked)
+            {
+                Blades.Blade[i].FavoriteCategory0Unlocked = 1;
+                Printf("[Blades.Favorites] \"%s\" Favorite Category 0 Unlocked.\n", Blades.Blade[i].Name);
+                total++;
+            }
+
+            if (Blades.Blade[i].FavoriteItem0 &&
+                !Blades.Blade[i].FavoriteItem0Unlocked)
+            {
+                Blades.Blade[i].FavoriteItem0Unlocked = 1;
+                Printf("[Blades.Favorites] \"%s\" Favorite Item 0 Unlocked.\n", Blades.Blade[i].Name);
+                total++;
+            }
+
+            if (Blades.Blade[i].FavoriteCategory1 &&
+                !Blades.Blade[i].FavoriteCategory1Unlocked)
+            {
+                Blades.Blade[i].FavoriteCategory1Unlocked = 1;
+                Printf("[Blades.Favorites] \"%s\" Favorite Category 1 Unlocked.\n", Blades.Blade[i].Name);
+                total++;
+            }
+
+            if (Blades.Blade[i].FavoriteItem1 &&
+                !Blades.Blade[i].FavoriteItem1Unlocked)
+            {
+                Blades.Blade[i].FavoriteItem1Unlocked = 1;
+                Printf("[Blades.Favorites] \"%s\" Favorite Item 1 Unlocked.\n", Blades.Blade[i].Name);
+                total++;
+            }
+        }
+    }
+
+    Printf("[Blades.Favorites] %ld unlocked.\n", total);
+}
+
+void setBladeAffinityChartUnlocked(int bladeId)
+{
+    const int size = sizeof(Blades) / sizeof(gf_SDataBlade);
+
+    // Printf("[Blades] size: %ld.\n", size);
+
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int total = 0;
+    int achievementsSize = 0;
+    int questsSize = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (Blades.Blade[i].Creator &&
+            (!bladeId ||
+            Blades.Blade[i].BladeId == bladeId))
+        {
+            // Achievements
+            achievementsSize = sizeof(Blades.Blade[i].BArtsAchieve) / sizeof(gf_AchievInfo);
+
+            j = 0;
+            for (j = 0; j < achievementsSize; j++)
+            {
+                questsSize = sizeof(Blades.Blade[i].BArtsAchieve[j]) / sizeof(gf_AchievQuest);
+
+                k = 0;
+                for (k = 0; k < questsSize; k++)
+                {
+                    if (Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].MaxCount)
+                    {
+                        if (Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].TaskType == 4)
+                        {
+                            Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].Count = Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].MaxCount - 1;
+                        }
+                        else
+                        {
+                            Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].Count = Blades.Blade[i].BArtsAchieve[j].AchievQuests[k].MaxCount;
+                        }
+                    }
+                }
+            }
+
+            achievementsSize = sizeof(Blades.Blade[i].BSkillsAchievement) / sizeof(gf_AchievInfo);
+
+            j = 0;
+            for (j = 0; j < achievementsSize; j++)
+            {
+                questsSize = sizeof(Blades.Blade[i].BSkillsAchievement[j]) / sizeof(gf_AchievQuest);
+
+                k = 0;
+                for (k = 0; k < questsSize; k++)
+                {
+                    if (Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].MaxCount)
+                    {
+                        if (Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].TaskType == 4)
+                        {
+                            Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].Count = Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].MaxCount - 1;
+                        }
+                        else
+                        {
+                            Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].Count = Blades.Blade[i].BSkillsAchievement[j].AchievQuests[k].MaxCount;
+                        }
+                    }
+                }
+            }
+
+            achievementsSize = sizeof(Blades.Blade[i].FSkillsAchievement) / sizeof(gf_AchievInfo);
+
+            j = 0;
+            for (j = 0; j < achievementsSize; j++)
+            {
+                questsSize = sizeof(Blades.Blade[i].FSkillsAchievement[j]) / sizeof(gf_AchievQuest);
+
+                k = 0;
+                for (k = 0; k < questsSize; k++)
+                {
+                    if (Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].MaxCount)
+                    {
+                        if (Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].TaskType == 4)
+                        {
+                            Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].Count = Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].MaxCount - 1;
+                        }
+                        else
+                        {
+                            Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].Count = Blades.Blade[i].FSkillsAchievement[j].AchievQuests[k].MaxCount;
+                        }
+                    }
+                }
+            }
+
+            achievementsSize = sizeof(Blades.Blade[i].KeyAchievement) / sizeof(gf_AchievInfo);
+
+            j = 0;
+            for (j = 0; j < achievementsSize; j++)
+            {
+                questsSize = sizeof(Blades.Blade[i].KeyAchievement[j]) / sizeof(gf_AchievQuest);
+
+                k = 0;
+                for (k = 0; k < questsSize; k++)
+                {
+                    if (Blades.Blade[i].KeyAchievement[j].AchievQuests[k].MaxCount)
+                    {
+                        if (Blades.Blade[i].KeyAchievement[j].AchievQuests[k].TaskType == 4)
+                        {
+                            Blades.Blade[i].KeyAchievement[j].AchievQuests[k].Count = Blades.Blade[i].KeyAchievement[j].AchievQuests[k].MaxCount - 1;
+                        }
+                        else
+                        {
+                            Blades.Blade[i].KeyAchievement[j].AchievQuests[k].Count = Blades.Blade[i].KeyAchievement[j].AchievQuests[k].MaxCount;
+                        }
+                    }
+                }
+            }
+
+            total++;
+        }
+    }
+
+    Printf("[Blades.AffinityChart] %ld unlocked.\n", total);
+}
+
+// Item: Chip
+
+#define BF2_ITEM_CHIP_COUNT_MAX 99
+
+void setItemChipBoxMax(void)
+{
+    setItemChipBox(BF2_ITEM_CHIP_COUNT_MAX);
+}
+
+void setItemChipBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.PcWpnChipBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Chip] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.PcWpnChipBox[i].Count &&
+            ItemBox.PcWpnChipBox[i].Count != value)
+        {
+            ItemBox.PcWpnChipBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Chip] %ld patched.\n", total);
+}
+
+// Item: Salvage
+
+#define BF2_ITEM_SALVAGE_COUNT_MAX 99
+
+void setItemSalvageBoxMax(void)
+{
+    setItemSalvageBox(BF2_ITEM_SALVAGE_COUNT_MAX);
+}
+
+void setItemSalvageBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.SalvageBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Salvage] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.SalvageBox[i].Count &&
+            ItemBox.SalvageBox[i].Count != value)
+        {
+            ItemBox.SalvageBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Salvage] %ld patched.\n", total);
+}
+
+// Item: Precious
+
+#define BF2_ITEM_PRECIOUS_COUNT_MAX 99
+
+void setItemPreciousBoxMax(void)
+{
+    setItemPreciousBox(BF2_ITEM_PRECIOUS_COUNT_MAX);
+}
+
+void setItemPreciousBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.PreciousBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Precious] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.PreciousBox[i].Count &&
+            ItemBox.PreciousBox[i].Count != value)
+        {
+            ItemBox.PreciousBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Precious] %ld patched.\n", total);
+}
+
+// Item: CollectionList
+
+#define BF2_ITEM_COLLECTION_LIST_COUNT_MAX 999
+
+void setItemCollectionListBoxMax(void)
+{
+    setItemCollectionListBox(BF2_ITEM_COLLECTION_LIST_COUNT_MAX);
+}
+
+void setItemCollectionListBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.CollectionListBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.CollectionList] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.CollectionListBox[i].Count &&
+            ItemBox.CollectionListBox[i].Count != value)
+        {
+            ItemBox.CollectionListBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.CollectionList] %ld patched.\n", total);
+}
+
+// Item: Tresure
+
+#define BF2_ITEM_TREASURE_COUNT_MAX 99
+
+void setItemTresureBoxMax(void)
+{
+    setItemTresureBox(BF2_ITEM_TREASURE_COUNT_MAX);
+}
+
+void setItemTresureBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.TresureBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Tresure] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.TresureBox[i].Count &&
+            ItemBox.TresureBox[i].Count != value)
+        {
+            ItemBox.TresureBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Tresure] %ld patched.\n", total);
+}
+
+// Item: EmptyOrb
+
+#define BF2_ITEM_EMPTY_ORB_COUNT_MAX 99
+
+void setItemEmptyOrbBoxMax(void)
+{
+    setItemEmptyOrbBox(BF2_ITEM_EMPTY_ORB_COUNT_MAX);
+}
+
+void setItemEmptyOrbBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.EmptyOrbBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.EmptyOrb] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.EmptyOrbBox[i].Count &&
+            ItemBox.EmptyOrbBox[i].Count != value)
+        {
+            ItemBox.EmptyOrbBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.EmptyOrb] %ld patched.\n", total);
+}
+
+// Item: Favorite
+
+#define BF2_ITEM_FAVORITE_COUNT_MAX 99 // Normal value is up to 33/40, but we can always use 99.
+
+void setItemFavoriteBoxMax(void)
+{
+    setItemFavoriteBox(BF2_ITEM_FAVORITE_COUNT_MAX);
+}
+
+void setItemFavoriteBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.FavoriteBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Favorite] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.FavoriteBox[i].Count &&
+            ItemBox.FavoriteBox[i].Count != value)
+        {
+            ItemBox.FavoriteBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Favorite] %ld patched.\n", total);
+}
+
+// Item: Crystal
+
+#define BF2_ITEM_CRYSTAL_COUNT_MAX      99
+
+void setItemCrystalBoxMax(void)
+{
+    setItemCrystalBox(BF2_ITEM_CRYSTAL_COUNT_MAX);
+}
+
+void setItemCrystalBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.CrystalListBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Crystal] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.CrystalListBox[i].Count &&
+            ItemBox.CrystalListBox[i].Count != value)
+        {
+            ItemBox.CrystalListBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Crystal] %ld patched.\n", total);
+}
+
+void setItemCrystalBoxEntries(void)
+{
+    const int size = sizeof(ItemBox.CrystalListBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Crystal] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+    int ids[3] = {13, 12, 11};
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.CrystalListBox[i].Id == ids[0] ||
+            ItemBox.CrystalListBox[i].Id == ids[1] ||
+            ItemBox.CrystalListBox[i].Id == ids[2])
+            {
+                ItemBox.CrystalListBox[i].Id = 0;
+                ItemBox.CrystalListBox[i].Type = 0;
+                ItemBox.CrystalListBox[i].Count = 0;
+                ItemBox.CrystalListBox[i].Serial = 0;
+                ItemBox.CrystalListBox[i].Time.Seconds = 0;
+                ItemBox.CrystalListBox[i].Time.Minutes = 0;
+                ItemBox.CrystalListBox[i].Time.Hours = 0;
+            }
+    }
+
+    int pos = 0;
+
+    // Create 3 types of crystals.
+    if (size >= 3)
+    {
+        for (i = 0; i < size; i++)
+        {
+            if (ItemBox.CrystalListBox[i].Id == 0)
+            {
+                ItemBox.CrystalListBox[i].Id = ids[pos++];
+                ItemBox.CrystalListBox[i].Type = 11;
+                ItemBox.CrystalListBox[i].Count = BF2_ITEM_CRYSTAL_COUNT_MAX;
+                ItemBox.CrystalListBox[i].Serial = i+1;
+                ItemBox.CrystalListBox[i].Time.Seconds = 0;
+                ItemBox.CrystalListBox[i].Time.Minutes = 0;
+                ItemBox.CrystalListBox[i].Time.Hours = 0;
+
+                if (pos > 2)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    // for (i = 0; i < size; i++)
+    // {
+    //     ItemBox.CrystalListBox[i].Id = 13;
+    //     ItemBox.CrystalListBox[i].Type = 11;
+    //     ItemBox.CrystalListBox[i].Count = BF2_ITEM_CRYSTAL_COUNT_MAX;
+    //     ItemBox.CrystalListBox[i].Serial = i+1;
+    //     ItemBox.CrystalListBox[i].Time.Hours = 9999;
+    // }
+
+    Printf("[Item.Crystal] Entries created.\n");
+}
+
+// Item: Booster
+
+#define BF2_ITEM_BOOSTER_COUNT_MAX 25 // Normal value is up to 25, but we can always use 99.
+
+void setItemBoosterBoxMax(void)
+{
+    setItemBoosterBox(BF2_ITEM_BOOSTER_COUNT_MAX);
+}
+
+void setItemBoosterBox(uint32 value)
+{
+    const int size = sizeof(ItemBox.BoosterBox) / sizeof(gf_GfItemInfo);
+
+    // Printf("[Item.Booster] size: %ld.\n", size);
+
+    int i = 0;
+    int total = 0;
+
+    for (i = 0; i < size; i++)
+    {
+        if (ItemBox.BoosterBox[i].Count &&
+            ItemBox.BoosterBox[i].Count != value)
+        {
+            ItemBox.BoosterBox[i].Count = value;
+            total++;
+        }
+    }
+
+    Printf("[Item.Booster] %ld patched.\n", total);
+}
