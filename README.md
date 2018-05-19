@@ -4,7 +4,7 @@ https://github.com/x43x61x69/Xenoblade2-Save-Editor
 
 ## Help wanted
 
-__If you have saves exactly before and after you get a rare blade, w/o doing anything else in between, please provide those saves in the comments. I might be able to fix the rare blades unlock feature.__
+__If you have saves exactly before and after you get a rare blade, w/o doing anything else in between, please provide those saves. I might be able to fix the rare blades unlock feature.__
 
 ## Changelog
 
